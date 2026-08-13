@@ -2,6 +2,8 @@
 
 A beautiful, frameless desktop widget built with Electron and Python that displays real-time airport departure information using the FlightRadar24 API.
 
+![Desktop Flight Board Screenshot](screenshot.png)
+
 ## Features
 - **Premium UI:** Dark theme, frameless, and transparent background. Matches the aesthetics of modern airport information boards.
 - **Real-time Data:** Fetches live flight data using `FlightRadarAPI`.
