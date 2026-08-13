@@ -1,0 +1,19 @@
+{
+  "name": "desktop-flight-board",
+  "version": "1.0.0",
+  "description": "A beautiful, frameless desktop widget that displays real-time airport departure information.",
+  "main": "main.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^43.4.0"
+  }
+}
