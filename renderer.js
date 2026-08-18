@@ -1,431 +1,970 @@
 const HanedaApiProvider = require('./providers/HanedaApiProvider');
 
-// Initialize the data provider
 const provider = new HanedaApiProvider();
 
-// DOM Elements
-const flightListEl = document.getElementById('flight-list');
-const template = document.getElementById('flight-row-template');
-const airportSelectEl = document.getElementById('airport-select');
-const filterSelectEl = document.getElementById('filter-select');
-const updateTimeEl = document.getElementById('update-time');
+const flightListEl =
+  document.getElementById('flight-list');
 
-// Airport Country Mapping (to determine domestic vs international)
+const template =
+  document.getElementById('flight-row-template');
+
+const airportSelectEl =
+  document.getElementById('airport-select');
+
+const filterSelectEl =
+  document.getElementById('filter-select');
+
+const updateTimeEl =
+  document.getElementById('update-time');
+
+
 const airportCountries = {
-  "HND": "JP",
-  "NRT": "JP",
-  "JFK": "US",
-  "ZRH": "CH"
+
+  HND: 'JP',
+  ITM: 'JP',
+  FUK: 'JP',
+  NRT: 'JP',
+
+  JFK: 'US',
+
+  ZRH: 'CH'
+
 };
 
-// City translation dictionary
+
 const cityTranslations = {
-  // Japan (Domestic)
-  "Sapporo": "札幌",
-  "Asahikawa": "旭川",
-  "Hakodate": "函館",
-  "Aomori": "青森",
-  "Akita": "秋田",
-  "Sendai": "仙台",
-  "Tokyo": "東京",
-  "Nagoya": "名古屋",
-  "Osaka": "大阪",
-  "Kobe": "神戸",
-  "Fukuoka": "福岡",
-  "Kitakyushu": "北九州",
-  "Nagasaki": "長崎",
-  "Kumamoto": "熊本",
-  "Oita": "大分",
-  "Miyazaki": "宮崎",
-  "Kagoshima": "鹿児島",
-  "Okinawa": "那覇",
-  "Naha": "那覇",
-  "Ishigaki": "石垣",
-  "Miyako": "宮古",
-  "Takamatsu": "高松",
-  "Matsuyama": "松山",
-  "Kochi": "高知",
-  "Hiroshima": "広島",
-  "Okayama": "岡山",
-  "Yamaguchi": "山口",
-  "Ube": "宇部",
-  "Iwakuni": "岩国",
-  "Izumo": "出雲",
-  "Matsue": "松江",
-  "Tottori": "鳥取",
-  "Yonago": "米子",
-  "Tokushima": "徳島",
-  "Takamatsu": "高松",
-  "Matsuyama": "松山",
-  "Komatsu": "小松",
-  "Toyama": "富山",
-  "Niigata": "新潟",
-  "Shizuoka": "静岡",
-  "Ibaraki": "茨城",
-  "Fukushima": "福島",
-  "Shonai": "庄内",
-  "Odate-Noshiro": "大館能代",
-  "Kushiro": "釧路",
-  "Obihiro": "帯広",
-  "Memanbetsu": "女満別",
-  "Nakashibetsu": "中標津",
-  "Wakkanai": "稚内",
-  "Monbetsu": "紋別",
-  "Hachijojima": "八丈島",
-  "Amami": "奄美",
-  "Amami Oshima": "奄美大島",
-  "Tokunoshima": "徳之島",
-  "Kumejima": "久米島",
-  "Shimojishima": "下地島",
-  "Yonaguni": "与那国",
 
-  // Asia
-  "Beijing": "北京",
-  "Shanghai": "上海",
-  "Hong Kong": "香港",
-  "Taipei": "台北",
-  "Seoul": "ソウル",
-  "Busan": "釜山",
-  "Jeju": "済州",
-  "Manila": "マニラ",
-  "Cebu": "セブ",
-  "Singapore": "シンガポール",
-  "Bangkok": "バンコク",
-  "Ho Chi Minh City": "ホーチミン",
-  "Hanoi": "ハノイ",
-  "Da Nang": "ダナン",
-  "Kuala Lumpur": "クアラルンプール",
-  "Jakarta": "ジャカルタ",
-  "Denpasar": "バリ島 (デンパサール)",
-  "New Delhi": "ニューデリー",
-  "Mumbai": "ムンバイ",
-  "Colombo": "コロンボ",
-  "Guangzhou": "広州",
-  "Dalian": "大連",
-  "Qingdao": "青島",
-  "Macau": "マカオ",
-  "Kaohsiung": "高雄",
-  
-  // North America
-  "New York": "ニューヨーク",
-  "Los Angeles": "ロサンゼルス",
-  "San Francisco": "サンフランシスコ",
-  "Chicago": "シカゴ",
-  "Seattle": "シアトル",
-  "Washington": "ワシントンD.C.",
-  "Washington, D.C.": "ワシントンD.C.",
-  "Honolulu": "ホノルル",
-  "Vancouver": "バンクーバー",
-  "Toronto": "トロント",
-  "Montreal": "モントリオール",
-  "Dallas-Fort Worth": "ダラス",
-  "Dallas": "ダラス",
-  "Houston": "ヒューストン",
-  "Atlanta": "アトランタ",
-  "Detroit": "デトロイト",
-  "Boston": "ボストン",
-  "Miami": "マイアミ",
-  "Las Vegas": "ラスベガス",
-  "Orlando": "オーランド",
-  "Denver": "デンバー",
-  "Indianapolis": "インディアナポリス",
-  "Anchorage": "アンカレジ",
-  "Monterrey": "モンテレイ",
-  "Mexico City": "メキシコシティ",
-  "Cancun": "カンクン",
-  
-  // Central & South America
-  "Panama City": "パナマシティ",
-  "San Salvador": "サンサルバドル",
-  "Guatemala City": "グアテマラシティ",
-  "Bogota": "ボゴタ",
-  "Medellin": "メデジン",
-  "Quito": "キト",
-  "Guayaquil": "グアヤキル",
-  "Lima": "リマ",
-  "Sao Paulo": "サンパウロ",
-  "Rio de Janeiro": "リオデジャネイロ",
-  "Buenos Aires": "ブエノスアイレス",
-  "Santiago": "サンティアゴ",
-  
-  // Europe
-  "London": "ロンドン",
-  "Paris": "パリ",
-  "Frankfurt": "フランクフルト",
-  "Munich": "ミュンヘン",
-  "Berlin": "ベルリン",
-  "Amsterdam": "アムステルダム",
-  "Zurich": "チューリッヒ",
-  "Geneva": "ジュネーブ",
-  "Rome": "ローマ",
-  "Milan": "ミラノ",
-  "Madrid": "マドリード",
-  "Barcelona": "バルセロナ",
-  "Helsinki": "ヘルシンキ",
-  "Vienna": "ウィーン",
-  "Copenhagen": "コペンハーゲン",
-  "Stockholm": "ストックホルム",
-  "Oslo": "オスロ",
-  "Istanbul": "イスタンブール",
-  "Athens": "アテネ",
-  "Lisbon": "リスボン",
-  "Prague": "プラハ",
-  "Budapest": "ブダペスト",
-  "Warsaw": "ワルシャワ",
-  
-  // Oceania
-  "Sydney": "シドニー",
-  "Melbourne": "メルボルン",
-  "Brisbane": "ブリスベン",
-  "Perth": "パース",
-  "Auckland": "オークランド",
-  "Cairns": "ケアンズ",
-  "Gold Coast": "ゴールドコースト",
-  "Noumea": "ヌメア",
-  
-  // Middle East & Africa
-  "Dubai": "ドバイ",
-  "Doha": "ドーハ",
-  "Abu Dhabi": "アブダビ",
-  "Tel Aviv": "テルアビブ",
-  "Cairo": "カイロ",
-  "Johannesburg": "ヨハネスブルグ",
-  "Cape Town": "ケープタウン",
-  "Nairobi": "ナイロビ",
+  Sapporo: '札幌',
+  Chitose: '札幌',
+  Asahikawa: '旭川',
+  Hakodate: '函館',
+  Kushiro: '釧路',
+  Obihiro: '帯広',
+  Memanbetsu: '女満別',
+  Nakashibetsu: '中標津',
+  Wakkanai: '稚内',
+  Monbetsu: '紋別',
 
-  // Auto-added missing translations
-  "Nanki Shirahama": "南紀白浜",
-  "Nankoku": "南国(高知)",
-  "Sakata": "酒田(庄内)",
-  "Misawa": "三沢",
-  "Abidjan": "アビジャン",
-  "Angeles City": "アンヘレス(クラーク)",
-  "Belgrade": "ベオグラード",
-  "Bern": "ベルン",
-  "Bilbao": "ビルバオ",
-  "Birmingham": "バーミンガム",
-  "Bologna": "ボローニャ",
-  "Bordeaux": "ボルドー",
-  "Brindisi": "ブリンディジ",
-  "Brussels": "ブリュッセル",
-  "Buffalo": "バッファロー",
-  "Cagliari": "カリアリ",
-  "Cheongju": "清州",
-  "Cleveland": "クリーブランド",
-  "Daegu": "大邱",
-  "Delhi": "デリー",
-  "Dresden": "ドレスデン",
-  "Dublin": "ダブリン",
-  "Dusseldorf": "デュッセルドルフ",
-  "Florence": "フィレンツェ",
-  "Funchal": "フンシャル",
-  "Fuzhou": "福州",
-  "Georgetown": "ジョージタウン",
-  "Gothenburg": "ヨーテボリ",
-  "Gran Canaria": "グラン・カナリア",
-  "Graz": "グラーツ",
-  "Guam": "グアム",
-  "Hamburg": "ハンブルク",
-  "Heraklion": "イラクリオン",
-  "Hurghada": "フルガダ",
-  "Ibiza": "イビサ",
-  "Ithaca": "イサカ",
-  "Jacksonville": "ジャクソンビル",
-  "Kefalonia": "ケファロニア",
-  "Kilimanjaro": "キリマンジャロ",
-  "Kingston": "キングストン",
-  "Kos": "コス",
-  "Lamezia Terme": "ラメツィア・テルメ",
-  "Ljubljana": "リュブリャナ",
-  "Louisville": "ルイビル",
-  "Luxembourg": "ルクセンブルク",
-  "Malaga": "マラガ",
-  "Manchester": "マンチェスター",
-  "Memphis": "メンフィス",
-  "Naples": "ナポリ",
-  "Nice": "ニース",
-  "Ohrid": "オフリド",
-  "Palermo": "パレルモ",
-  "Palma de Mallorca": "パルマ・デ・マヨルカ",
-  "Pisa": "ピサ",
-  "Pittsburgh": "ピッツバーグ",
-  "Portland": "ポートランド",
-  "Porto": "ポルト",
-  "Pristina": "プリシュティナ",
-  "Providence": "プロビデンス",
-  "Raleigh-Durham": "ローリー・ダーラム",
-  "Reykjavik": "レイキャビク",
-  "Rhodes": "ロードス",
-  "Rochester": "ロチェスター",
-  "San Juan": "サンフアン",
-  "Santiago de los Caballeros": "サンティアゴ・デ・ロス・カバリェロス",
-  "Santo Domingo": "サントドミンゴ",
-  "Shannon": "シャノン",
-  "Shenzhen": "深圳",
-  "Sofia": "ソフィア",
-  "Split": "スプリト",
-  "Stuttgart": "シュトゥットガルト",
-  "Syracuse": "シラキュース",
-  "Tashkent": "タシュケント",
-  "Tenerife": "テネリフェ",
-  "Thessaloniki": "テッサロニキ",
-  "Tianjin": "天津",
-  "Tirana": "ティラナ",
-  "Tromso": "トロムソ",
-  "Ulaanbaatar": "ウランバートル",
-  "Valencia": "バレンシア",
-  "Venice": "ベネチア",
-  "Windsor Locks": "ウィンザーロックス",
-  "Xiamen": "アモイ",
+  Aomori: '青森',
+  Misawa: '三沢',
+  Akita: '秋田',
+  Sendai: '仙台',
+  Yamagata: '山形',
+  Fukushima: '福島',
+  Shonai: '庄内',
+  Sakata: '庄内',
+  'Odate-Noshiro': '大館能代',
+
+  Tokyo: '東京',
+  Narita: '東京',
+  Hachijojima: '八丈島',
+
+  Niigata: '新潟',
+  Toyama: '富山',
+  Komatsu: '小松',
+  Shizuoka: '静岡',
+  Ibaraki: '茨城',
+
+  Nagoya: '名古屋',
+
+  Osaka: '大阪',
+  Kobe: '神戸',
+
+  Okayama: '岡山',
+  Hiroshima: '広島',
+  Iwakuni: '岩国',
+  Ube: '山口宇部',
+  Yamaguchi: '山口',
+  Tottori: '鳥取',
+  Yonago: '米子',
+  Izumo: '出雲',
+
+  Tokushima: '徳島',
+  Takamatsu: '高松',
+  Matsuyama: '松山',
+  Kochi: '高知',
+  Nankoku: '高知',
+
+  Fukuoka: '福岡',
+  Kitakyushu: '北九州',
+  Saga: '佐賀',
+  Nagasaki: '長崎',
+  Kumamoto: '熊本',
+  Oita: '大分',
+  Miyazaki: '宮崎',
+  Kagoshima: '鹿児島',
+
+  Okinawa: '那覇',
+  Naha: '那覇',
+  Ishigaki: '石垣',
+  Miyako: '宮古',
+  'Miyako-jima': '宮古',
+  Shimojishima: '下地島',
+  Kumejima: '久米島',
+  Yonaguni: '与那国',
+
+  Amami: '奄美',
+  'Amami Oshima': '奄美大島',
+  Tokunoshima: '徳之島',
+
+  'Nanki Shirahama': '南紀白浜',
+
+
+  Seoul: 'ソウル',
+  Busan: '釜山',
+  Jeju: '済州',
+  Cheongju: '清州',
+  Daegu: '大邱',
+
+  Beijing: '北京',
+  Shanghai: '上海',
+  Guangzhou: '広州',
+  Shenzhen: '深圳',
+  Dalian: '大連',
+  Qingdao: '青島',
+  Tianjin: '天津',
+  Xiamen: 'アモイ',
+  Fuzhou: '福州',
+
+  Hong Kong: '香港',
+  Macau: 'マカオ',
+
+  Taipei: '台北',
+  Kaohsiung: '高雄',
+
+  Manila: 'マニラ',
+  Cebu: 'セブ',
+  'Angeles City': 'クラーク',
+
+  Bangkok: 'バンコク',
+  Singapore: 'シンガポール',
+  'Kuala Lumpur': 'クアラルンプール',
+
+  Hanoi: 'ハノイ',
+  'Ho Chi Minh City': 'ホーチミン',
+  'Da Nang': 'ダナン',
+
+  Jakarta: 'ジャカルタ',
+  Denpasar: 'デンパサール',
+
+  Delhi: 'デリー',
+  'New Delhi': 'ニューデリー',
+  Mumbai: 'ムンバイ',
+
+  Colombo: 'コロンボ',
+
+  Ulaanbaatar: 'ウランバートル',
+
+
+  Honolulu: 'ホノルル',
+  Guam: 'グアム',
+
+  'New York': 'ニューヨーク',
+  'Los Angeles': 'ロサンゼルス',
+  'San Francisco': 'サンフランシスコ',
+  Seattle: 'シアトル',
+  Chicago: 'シカゴ',
+  Boston: 'ボストン',
+  Washington: 'ワシントンD.C.',
+  'Washington, D.C.': 'ワシントンD.C.',
+  Dallas: 'ダラス',
+  'Dallas-Fort Worth': 'ダラス',
+  Houston: 'ヒューストン',
+  Atlanta: 'アトランタ',
+  Detroit: 'デトロイト',
+  Miami: 'マイアミ',
+  Denver: 'デンバー',
+  Orlando: 'オーランド',
+  'Las Vegas': 'ラスベガス',
+  Portland: 'ポートランド',
+  Anchorage: 'アンカレジ',
+
+  Vancouver: 'バンクーバー',
+  Toronto: 'トロント',
+  Montreal: 'モントリオール',
+
+  'Mexico City': 'メキシコシティ',
+  Cancun: 'カンクン',
+
+
+  London: 'ロンドン',
+  Paris: 'パリ',
+  Frankfurt: 'フランクフルト',
+  Munich: 'ミュンヘン',
+  Berlin: 'ベルリン',
+  Amsterdam: 'アムステルダム',
+  Zurich: 'チューリッヒ',
+  Geneva: 'ジュネーブ',
+  Rome: 'ローマ',
+  Milan: 'ミラノ',
+  Madrid: 'マドリード',
+  Barcelona: 'バルセロナ',
+  Helsinki: 'ヘルシンキ',
+  Vienna: 'ウィーン',
+  Copenhagen: 'コペンハーゲン',
+  Stockholm: 'ストックホルム',
+  Oslo: 'オスロ',
+  Istanbul: 'イスタンブール',
+  Athens: 'アテネ',
+  Lisbon: 'リスボン',
+  Prague: 'プラハ',
+  Budapest: 'ブダペスト',
+  Warsaw: 'ワルシャワ',
+  Brussels: 'ブリュッセル',
+  Dublin: 'ダブリン',
+  Manchester: 'マンチェスター',
+  Venice: 'ベネチア',
+  Naples: 'ナポリ',
+  Nice: 'ニース',
+
+
+  Dubai: 'ドバイ',
+  Doha: 'ドーハ',
+  'Abu Dhabi': 'アブダビ',
+  'Tel Aviv': 'テルアビブ',
+
+  Cairo: 'カイロ',
+  Johannesburg: 'ヨハネスブルグ',
+  'Cape Town': 'ケープタウン',
+  Nairobi: 'ナイロビ',
+
+
+  Sydney: 'シドニー',
+  Melbourne: 'メルボルン',
+  Brisbane: 'ブリスベン',
+  Perth: 'パース',
+  Cairns: 'ケアンズ',
+  'Gold Coast': 'ゴールドコースト',
+  Auckland: 'オークランド',
+  Noumea: 'ヌメア'
+
 };
 
-/**
- * Format Date object to HH:mm string
- */
+
+let requestSerial = 0;
+
+
 function formatTime(date) {
-  if (!date) return '';
-  return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+  if (!date) {
+    return '';
+  }
+
+  const value =
+    date instanceof Date
+      ? date
+      : new Date(date);
+
+  if (
+    Number.isNaN(
+      value.getTime()
+    )
+  ) {
+    return '';
+  }
+
+  return value.toLocaleTimeString(
+    'ja-JP',
+    {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }
+  );
+
 }
 
-/**
- * Render flights to the DOM
- */
-function renderFlights(flights) {
+
+function setLoading() {
+
+  flightListEl.innerHTML =
+    '<div class="flight-row" ' +
+    'style="justify-content:center;color:#888;">' +
+    'Loading flights...' +
+    '</div>';
+
+}
+
+
+function setError(message) {
+
+  flightListEl.innerHTML =
+    '<div class="flight-row" ' +
+    'style="justify-content:center;color:#ff7777;">' +
+    message +
+    '</div>';
+
+}
+
+
+function getJapaneseCity(
+  englishName
+) {
+
+  if (!englishName) {
+    return '';
+  }
+
+  return (
+    cityTranslations[
+      englishName
+    ] ||
+    englishName
+  );
+
+}
+
+
+function getLogoUrl(
+  airlineCode
+) {
+
+  if (!airlineCode) {
+    return '';
+  }
+
+  return (
+    'https://images.kiwi.com/' +
+    'airlines/64/' +
+    airlineCode +
+    '.png'
+  );
+
+}
+
+
+function setLogo(
+  imageElement,
+  airlineCode
+) {
+
+  if (
+    !imageElement ||
+    !airlineCode
+  ) {
+
+    if (imageElement) {
+      imageElement.style.display =
+        'none';
+    }
+
+    return;
+
+  }
+
+
+  imageElement.style.display = '';
+
+  imageElement.src =
+    getLogoUrl(
+      airlineCode
+    );
+
+
+  imageElement.onerror =
+    function () {
+
+      this.style.display =
+        'none';
+
+    };
+
+}
+
+
+function renderFlights(
+  flights
+) {
+
   flightListEl.innerHTML = '';
-  
-  if (!flights || flights.length === 0) {
-    flightListEl.innerHTML = '<div class="flight-row" style="justify-content: center; color: #888;">No flights available</div>';
-    return;
-  }
-  
-  const currentAirportCode = airportSelectEl.value;
-  const currentCountry = airportCountries[currentAirportCode];
-  const filterMode = filterSelectEl.value; // 'all', 'domestic', 'international'
-  
-  // Apply filter
-  const filteredFlights = flights.filter(flight => {
-    if (filterMode === 'all') return true;
-    
-    // If we don't have country info, show it in both to be safe
-    if (!flight.destinationCountry || !currentCountry) return true;
-    
-    const isDomestic = (flight.destinationCountry === currentCountry);
-    if (filterMode === 'domestic') return isDomestic;
-    if (filterMode === 'international') return !isDomestic;
-    
-    return true;
-  });
 
-  if (filteredFlights.length === 0) {
-    flightListEl.innerHTML = '<div class="flight-row" style="justify-content: center; color: #888;">No matching flights</div>';
+
+  if (
+    !Array.isArray(flights) ||
+    flights.length === 0
+  ) {
+
+    flightListEl.innerHTML =
+      '<div class="flight-row" ' +
+      'style="justify-content:center;color:#888;">' +
+      'No flights available' +
+      '</div>';
+
     return;
+
   }
 
-  filteredFlights.forEach(flight => {
-    // Clone template
-    const clone = template.content.cloneNode(true);
-    const rowEl = clone.querySelector('.flight-row');
 
-    // Add yellow dot indicator class if changed
-    if (flight.estimatedTime) {
-      rowEl.classList.add('has-changed');
-    }
+  const currentAirportCode =
+    airportSelectEl.value;
 
-    // Schedule Time
-    clone.querySelector('.schedule-time').textContent = formatTime(flight.scheduleTime);
-    
-    // Estimated Time
-    const estTimeEl = clone.querySelector('.estimated-time');
-    if (flight.estimatedTime) {
-      estTimeEl.textContent = formatTime(flight.estimatedTime);
-    }
 
-    // Destination (Translate and add IATA code)
-    const enCity = flight.destination;
-    const jaCity = cityTranslations[enCity] || enCity;
-    const iataCode = flight.destinationSub;
-    
-    clone.querySelector('.dest-main').textContent = `${jaCity} (${iataCode})`;
-    clone.querySelector('.dest-sub').textContent = enCity !== jaCity ? enCity : '';
+  const currentCountry =
+    airportCountries[
+      currentAirportCode
+    ];
 
-    // Main Airline & Flight
-    const mainFlightEl = clone.querySelector('.main-flight');
-    const mainLogoEl = mainFlightEl.querySelector('.airline-logo');
-    if (flight.airline.code) {
-      mainLogoEl.src = `https://images.kiwi.com/airlines/64/${flight.airline.code}.png`;
-      // Error fallback if logo is missing
-      mainLogoEl.onerror = () => { mainLogoEl.style.display = 'none'; };
-    } else {
-      mainLogoEl.style.display = 'none';
-    }
 
-    mainFlightEl.querySelector('.flight-number').textContent = flight.flightNumber || '';
+  const filterMode =
+    filterSelectEl.value;
 
-    // Codeshare Airline & Flight (if any)
-    if (flight.codeshareAirline) {
-      const codeshareFlightEl = clone.querySelector('.codeshare-flight');
-      codeshareFlightEl.style.display = 'flex';
-      
-      const codeshareLogoEl = codeshareFlightEl.querySelector('.airline-logo');
-      if (flight.codeshareAirline.code) {
-        codeshareLogoEl.src = `https://images.kiwi.com/airlines/64/${flight.codeshareAirline.code}.png`;
-        codeshareLogoEl.onerror = () => { codeshareLogoEl.style.display = 'none'; };
-      } else {
-        codeshareLogoEl.style.display = 'none';
+
+  const filteredFlights =
+    flights.filter(
+      function (flight) {
+
+        if (
+          filterMode === 'all'
+        ) {
+          return true;
+        }
+
+
+        if (
+          !flight.destinationCountry ||
+          !currentCountry
+        ) {
+          return true;
+        }
+
+
+        const isDomestic =
+          flight.destinationCountry ===
+          currentCountry;
+
+
+        if (
+          filterMode ===
+          'domestic'
+        ) {
+          return isDomestic;
+        }
+
+
+        if (
+          filterMode ===
+          'international'
+        ) {
+          return !isDomestic;
+        }
+
+
+        return true;
+
+      }
+    );
+
+
+  if (
+    filteredFlights.length === 0
+  ) {
+
+    flightListEl.innerHTML =
+      '<div class="flight-row" ' +
+      'style="justify-content:center;color:#888;">' +
+      'No matching flights' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  filteredFlights.forEach(
+    function (flight) {
+
+      const fragment =
+        template.content.cloneNode(
+          true
+        );
+
+
+      const rowEl =
+        fragment.querySelector(
+          '.flight-row'
+        );
+
+
+      if (
+        flight.estimatedTime
+      ) {
+
+        rowEl.classList.add(
+          'has-changed'
+        );
+
       }
 
-      codeshareFlightEl.querySelector('.flight-number').textContent = flight.codeshareNumber || '';
+
+      const scheduleEl =
+        fragment.querySelector(
+          '.schedule-time'
+        );
+
+
+      scheduleEl.textContent =
+        formatTime(
+          flight.scheduleTime
+        );
+
+
+      const estimatedEl =
+        fragment.querySelector(
+          '.estimated-time'
+        );
+
+
+      estimatedEl.textContent =
+        flight.estimatedTime
+          ? formatTime(
+              flight.estimatedTime
+            )
+          : '';
+
+
+      const englishCity =
+        flight.destination ||
+        '';
+
+
+      const japaneseCity =
+        getJapaneseCity(
+          englishCity
+        );
+
+
+      const iata =
+        flight.destinationSub ||
+        '';
+
+
+      const destinationMain =
+        fragment.querySelector(
+          '.dest-main'
+        );
+
+
+      if (iata) {
+
+        destinationMain.textContent =
+          japaneseCity +
+          ' (' +
+          iata +
+          ')';
+
+      } else {
+
+        destinationMain.textContent =
+          japaneseCity;
+
+      }
+
+
+      const destinationSub =
+        fragment.querySelector(
+          '.dest-sub'
+        );
+
+
+      if (
+        englishCity &&
+        englishCity !==
+          japaneseCity
+      ) {
+
+        destinationSub.textContent =
+          englishCity;
+
+      } else {
+
+        destinationSub.textContent =
+          '';
+
+      }
+
+
+      const mainFlightEl =
+        fragment.querySelector(
+          '.main-flight'
+        );
+
+
+      const mainLogoEl =
+        mainFlightEl.querySelector(
+          '.airline-logo'
+        );
+
+
+      const mainAirlineCode =
+        flight.airline &&
+        flight.airline.code
+          ? flight.airline.code
+          : '';
+
+
+      setLogo(
+        mainLogoEl,
+        mainAirlineCode
+      );
+
+
+      const mainNumberEl =
+        mainFlightEl.querySelector(
+          '.flight-number'
+        );
+
+
+      mainNumberEl.textContent =
+        flight.flightNumber ||
+        '';
+
+
+      const codeshareFlightEl =
+        fragment.querySelector(
+          '.codeshare-flight'
+        );
+
+
+      if (
+        flight.codeshareNumber
+      ) {
+
+        codeshareFlightEl.style.display =
+          'flex';
+
+
+        const codeshareLogoEl =
+          codeshareFlightEl.querySelector(
+            '.airline-logo'
+          );
+
+
+        let codeshareCode = '';
+
+
+        if (
+          flight.codeshareAirline &&
+          flight.codeshareAirline.code
+        ) {
+
+          codeshareCode =
+            flight
+              .codeshareAirline
+              .code;
+
+        } else {
+
+          const match =
+            String(
+              flight.codeshareNumber
+            ).match(
+              /^([A-Z0-9]{2})/
+            );
+
+
+          if (match) {
+
+            codeshareCode =
+              match[1];
+
+          }
+
+        }
+
+
+        setLogo(
+          codeshareLogoEl,
+          codeshareCode
+        );
+
+
+        const codeshareNumberEl =
+          codeshareFlightEl
+            .querySelector(
+              '.flight-number'
+            );
+
+
+        codeshareNumberEl.textContent =
+          flight.codeshareNumber;
+
+      } else {
+
+        codeshareFlightEl.style.display =
+          'none';
+
+      }
+
+
+      const terminalEl =
+        fragment.querySelector(
+          '.terminal-text'
+        );
+
+
+      terminalEl.textContent =
+        flight.terminal ||
+        '';
+
+
+      const gateEl =
+        fragment.querySelector(
+          '.gate-text'
+        );
+
+
+      gateEl.textContent =
+        flight.gate ||
+        '';
+
+
+      flightListEl.appendChild(
+        fragment
+      );
+
+    }
+  );
+
+
+  if (updateTimeEl) {
+
+    updateTimeEl.textContent =
+      new Date()
+        .toLocaleTimeString(
+          'ja-JP',
+          {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }
+        );
+
+  }
+
+}
+
+
+async function updateBoard() {
+
+  const serial =
+    ++requestSerial;
+
+
+  try {
+
+    const flights =
+      await provider
+        .fetchDepartures();
+
+
+    if (
+      serial !==
+      requestSerial
+    ) {
+      return;
     }
 
-    // Terminal
-    clone.querySelector('.terminal-text').textContent = flight.terminal;
 
-    // Gate
-    clone.querySelector('.gate-text').textContent = flight.gate;
+    renderFlights(
+      flights
+    );
 
-    // Append to list
-    flightListEl.appendChild(clone);
-  });
-}
 
-/**
- * Main update loop
- */
-async function updateBoard() {
-  try {
-    const flights = await provider.fetchDepartures();
-    renderFlights(flights);
   } catch (error) {
-    console.error('Failed to fetch flight data:', error);
+
+    console.error(
+      'Failed to fetch flight data:',
+      error
+    );
+
+
+    if (
+      serial !==
+      requestSerial
+    ) {
+      return;
+    }
+
+
+    setError(
+      'Flight data could not be loaded'
+    );
+
   }
+
 }
 
-// Event Listeners
-airportSelectEl.addEventListener('change', async (e) => {
-  const newAirport = e.target.value;
-  provider.setAirport(newAirport);
-  
-  // Show loading state
-  flightListEl.innerHTML = '<div class="flight-row" style="justify-content: center; color: #888;">Loading flights...</div>';
-  
-  await provider.init();
-  updateBoard();
-});
 
-filterSelectEl.addEventListener('change', () => {
-  // Re-render immediately without fetching
-  renderFlights(provider.flights);
-});
+airportSelectEl.addEventListener(
+  'change',
+  async function (event) {
 
-// Initialization
+    const newAirport =
+      event.target.value;
+
+
+    try {
+
+      localStorage.setItem(
+        'flightBoardAirport',
+        newAirport
+      );
+
+    } catch (error) {
+
+      console.warn(
+        'Could not save airport selection'
+      );
+
+    }
+
+
+    provider.setAirport(
+      newAirport
+    );
+
+
+    requestSerial++;
+
+
+    setLoading();
+
+
+    try {
+
+      await provider.init();
+
+      await updateBoard();
+
+    } catch (error) {
+
+      console.error(
+        error
+      );
+
+      setError(
+        'Flight data could not be loaded'
+      );
+
+    }
+
+  }
+);
+
+
+filterSelectEl.addEventListener(
+  'change',
+  function () {
+
+    try {
+
+      localStorage.setItem(
+        'flightBoardFilter',
+        filterSelectEl.value
+      );
+
+    } catch (error) {
+
+      console.warn(
+        'Could not save filter selection'
+      );
+
+    }
+
+
+    renderFlights(
+      provider.flights
+    );
+
+  }
+);
+
+
 async function init() {
-  // Sync the initial value of select with provider
-  provider.setAirport(airportSelectEl.value);
-  await provider.init();
-  updateBoard();
-  
-  // Update board every 10 minutes to prevent API rate limiting
-  setInterval(updateBoard, 600000);
+
+  try {
+
+    const savedAirport =
+      localStorage.getItem(
+        'flightBoardAirport'
+      );
+
+
+    if (
+      savedAirport &&
+      airportCountries[
+        savedAirport
+      ]
+    ) {
+
+      airportSelectEl.value =
+        savedAirport;
+
+    }
+
+
+    const savedFilter =
+      localStorage.getItem(
+        'flightBoardFilter'
+      );
+
+
+    if (
+      savedFilter === 'all' ||
+      savedFilter === 'domestic' ||
+      savedFilter === 'international'
+    ) {
+
+      filterSelectEl.value =
+        savedFilter;
+
+    }
+
+
+  } catch (error) {
+
+    console.warn(
+      'Could not restore saved settings'
+    );
+
+  }
+
+
+  provider.setAirport(
+    airportSelectEl.value
+  );
+
+
+  setLoading();
+
+
+  try {
+
+    await provider.init();
+
+    await updateBoard();
+
+  } catch (error) {
+
+    console.error(
+      'Initialization failed:',
+      error
+    );
+
+
+    setError(
+      'Flight data could not be loaded'
+    );
+
+  }
+
+
+  setInterval(
+    updateBoard,
+    600000
+  );
+
 }
+
 
 init();
