@@ -12,13 +12,19 @@ except ImportError:
     from FlightRadar24 import FlightRadar24API
 
 
-def fetch_departures(airport_code="HND"):
+def fetch_flights(airport_code="HND", direction="departures"):
+
+    airport_code = airport_code.upper().strip()
+    direction = direction.lower().strip()
+
+    if direction not in ["departures", "arrivals"]:
+        direction = "departures"
 
     fr_api = FlightRadar24API()
 
-    all_departures = []
+    all_items = []
 
-    # 100便 × 2ページ = 最大200便取得
+    # 100便 × 2ページ ＝ 最大200便
     for page in [1, 2]:
 
         airport_details = fr_api.get_airport_details(
@@ -27,74 +33,71 @@ def fetch_departures(airport_code="HND"):
             page=page
         )
 
-        if (
-            'airport' not in airport_details
-            or 'pluginData' not in airport_details['airport']
-        ):
-            continue
+        airport_data = airport_details.get("airport") or {}
 
-        schedule = (
-            airport_details['airport']
-            ['pluginData']
-            .get('schedule', {})
-        )
+        plugin_data = airport_data.get("pluginData") or {}
 
-        departures = (
-            schedule
-            .get('departures', {})
-            .get('data', [])
-        )
+        schedule = plugin_data.get("schedule") or {}
 
-        all_departures.extend(departures)
+        direction_data = schedule.get(direction) or {}
+
+        items = direction_data.get("data") or []
+
+        all_items.extend(items)
 
 
     flights_list = []
 
-    # 重複防止
     seen = set()
 
 
-    for item in all_departures:
+    for item in all_items:
 
-        flight = item.get('flight') or {}
+        flight = item.get("flight") or {}
 
-        time_info = flight.get('time') or {}
+        time_info = flight.get("time") or {}
 
-        scheduled_info = (
-            time_info.get('scheduled') or {}
-        )
+        scheduled_info = time_info.get("scheduled") or {}
 
-        schedule_time = (
-            scheduled_info.get('departure')
-        )
+        estimated_info = time_info.get("estimated") or {}
+
+
+        if direction == "arrivals":
+
+            schedule_time = scheduled_info.get("arrival")
+
+            estimated_time = estimated_info.get("arrival")
+
+        else:
+
+            schedule_time = scheduled_info.get("departure")
+
+            estimated_time = estimated_info.get("departure")
+
 
         if not schedule_time:
             continue
 
 
-        identification = (
-            flight.get('identification') or {}
-        )
+        identification = flight.get("identification") or {}
 
-        number_info = (
-            identification.get('number') or {}
-        )
+        number_info = identification.get("number") or {}
 
-        flight_num = (
-            number_info.get('default')
-        )
+        flight_num = number_info.get("default") or ""
 
         flight_id = (
-            identification.get('id')
+            identification.get("id")
             or flight_num
-            or ''
+            or ""
         )
 
 
         unique_key = (
             str(flight_id),
-            str(schedule_time)
+            str(schedule_time),
+            direction
         )
+
 
         if unique_key in seen:
             continue
@@ -102,117 +105,89 @@ def fetch_departures(airport_code="HND"):
         seen.add(unique_key)
 
 
-        estimated_info = (
-            time_info.get('estimated') or {}
-        )
-
-        estimated_time = (
-            estimated_info.get('departure')
-        )
-
         if estimated_time == schedule_time:
             estimated_time = None
 
 
-        destination = (
-            flight
-            .get('airport', {})
-            .get('destination')
-        )
+        airports = flight.get("airport") or {}
 
 
-        if destination:
+        if direction == "arrivals":
 
-            dest_name = (
-                destination.get('name', '')
-            )
+            location = airports.get("origin") or {}
 
-            city = (
-                destination
-                .get('position', {})
-                .get('region', {})
-                .get('city')
-            )
-
-            if not city:
-                city = dest_name
-
-            dest_sub = (
-                destination
-                .get('code', {})
-                .get('iata', '')
-            )
-
-            dest_country = (
-                destination
-                .get('position', {})
-                .get('country', {})
-                .get('code', '')
-            )
+            airport_info = airports.get("destination") or {}
 
         else:
 
-            city = "Unknown"
-            dest_sub = ""
-            dest_country = ""
+            location = airports.get("destination") or {}
+
+            airport_info = airports.get("origin") or {}
 
 
-        airline = flight.get('airline')
+        location_name = location.get("name") or ""
+
+        location_position = location.get("position") or {}
+
+        location_region = location_position.get("region") or {}
+
+        location_country = location_position.get("country") or {}
+
+        location_code = location.get("code") or {}
 
 
-        if airline:
-
-            airline_name = (
-                airline.get('name', '')
-            )
-
-            airline_code = (
-                airline
-                .get('code', {})
-                .get('iata', '')
-            )
-
-        else:
-
-            airline_name = "Unknown"
-            airline_code = ""
-
-
-        codeshares = (
-            identification.get('codeshare')
+        city = (
+            location_region.get("city")
+            or location_name
+            or "Unknown"
         )
+
+
+        iata = location_code.get("iata") or ""
+
+        country_code = location_country.get("code") or ""
+
+
+        airline = flight.get("airline") or {}
+
+        airline_name = airline.get("name") or ""
+
+        airline_codes = airline.get("code") or {}
+
+        airline_code = airline_codes.get("iata") or ""
+
+
+        codeshares = identification.get("codeshare") or []
 
         codeshare_num = (
             codeshares[0]
-            if codeshares
-            and len(codeshares) > 0
+            if len(codeshares) > 0
             else None
         )
 
 
-        origin = (
-            flight
-            .get('airport', {})
-            .get('origin')
+        info = airport_info.get("info") or {}
+
+        terminal = info.get("terminal") or ""
+
+        gate = info.get("gate") or ""
+
+
+        aircraft = flight.get("aircraft") or {}
+
+        aircraft_model = aircraft.get("model") or {}
+
+        aircraft_code = (
+            aircraft_model.get("code")
+            or aircraft.get("code")
+            or ""
         )
 
 
-        if origin and 'info' in origin:
-
-            terminal = (
-                origin['info']
-                .get('terminal', '')
-            )
-
-            gate = (
-                origin['info']
-                .get('gate', '')
-            )
-
-        else:
-
-            terminal = ''
-            gate = ''
+        aircraft_text = (
+            aircraft_model.get("text")
+            or ""
+        )
 
 
         status_text = "ON TIME"
@@ -220,35 +195,42 @@ def fetch_departures(airport_code="HND"):
 
         if (
             estimated_time
-            and estimated_time
-            > schedule_time + 300
+            and schedule_time
+            and estimated_time > schedule_time + 300
         ):
             status_text = "DELAYED"
 
 
-        status_info = (
-            flight.get('status') or {}
-        )
+        status_info = flight.get("status") or {}
 
-        fr_status = (
-            status_info.get('text') or ''
-        )
+        fr_status = str(
+            status_info.get("text") or ""
+        ).lower()
 
 
-        if "Boarding" in fr_status:
+        if "boarding" in fr_status:
 
             status_text = "BOARDING"
 
-        elif "Departed" in fr_status:
-
-            status_text = "DEPARTED"
-
         elif (
-            "Canceled" in fr_status
-            or "Cancelled" in fr_status
+            "cancel" in fr_status
         ):
 
             status_text = "CANCELED"
+
+        elif direction == "departures" and (
+            "departed" in fr_status
+            or "takeoff" in fr_status
+        ):
+
+            status_text = "DEPARTED"
+
+        elif direction == "arrivals" and (
+            "landed" in fr_status
+            or "arrived" in fr_status
+        ):
+
+            status_text = "ARRIVED"
 
 
         flights_list.append({
@@ -256,20 +238,23 @@ def fetch_departures(airport_code="HND"):
             "id":
                 flight_id,
 
+            "direction":
+                direction,
+
             "scheduleTime":
                 schedule_time,
 
             "estimatedTime":
                 estimated_time,
 
-            "destination":
+            "location":
                 city,
 
-            "destinationSub":
-                dest_sub,
+            "locationSub":
+                iata,
 
-            "destinationCountry":
-                dest_country,
+            "locationCountry":
+                country_code,
 
             "airline": {
 
@@ -286,13 +271,21 @@ def fetch_departures(airport_code="HND"):
             "codeshareNumber":
                 codeshare_num,
 
+            "aircraftCode":
+                aircraft_code,
+
+            "aircraftText":
+                aircraft_text,
+
             "terminal":
                 f"T{terminal}"
                 if terminal
                 else "",
 
             "gate":
-                gate or "",
+                str(gate)
+                if gate
+                else "",
 
             "status":
                 status_text
@@ -321,4 +314,13 @@ if __name__ == "__main__":
         else "HND"
     )
 
-    fetch_departures(airport)
+    direction = (
+        sys.argv[2]
+        if len(sys.argv) > 2
+        else "departures"
+    )
+
+    fetch_flights(
+        airport,
+        direction
+    )
