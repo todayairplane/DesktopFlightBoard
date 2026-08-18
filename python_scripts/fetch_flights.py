@@ -37,17 +37,19 @@ def fetch_departures(airport_code="HND"):
         if estimated_time == schedule_time:
             estimated_time = None
         
-        destination = flight['airport']['destination']
+        destination = flight.get('airport', {}).get('destination')
         if destination:
             dest_name = destination.get('name', '')
             # Try to get city name if available, else use full name or code
             city = destination.get('position', {}).get('region', {}).get('city')
             if not city:
                 city = dest_name
-            dest_sub = destination['code']['iata']
+            dest_sub = destination.get('code', {}).get('iata', '')
+            dest_country = destination.get('position', {}).get('country', {}).get('code', '')
         else:
             city = "Unknown"
             dest_sub = ""
+            dest_country = ""
             
         airline = flight['airline']
         if airline:
@@ -94,6 +96,7 @@ def fetch_departures(airport_code="HND"):
             "estimatedTime": estimated_time, # Unix timestamp or None
             "destination": city,
             "destinationSub": dest_sub,
+            "destinationCountry": dest_country,
             "airline": {
                 "name": airline_name,
                 "code": airline_code

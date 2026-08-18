@@ -86,7 +86,7 @@ body {
   -webkit-app-region: no-drag; /* Allow clicking */
 }
 
-#airport-select {
+#airport-select, #filter-select {
   background-color: #1a1b3a;
   color: white;
   border: 1px solid #3a3b5a;
@@ -100,7 +100,7 @@ body {
   transition: all 0.2s;
 }
 
-#airport-select:hover {
+#airport-select:hover, #filter-select:hover {
   background-color: #2a2b4a;
   border-color: var(--icon-bg);
 }

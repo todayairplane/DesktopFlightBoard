@@ -7,6 +7,16 @@ const provider = new HanedaApiProvider();
 const flightListEl = document.getElementById('flight-list');
 const template = document.getElementById('flight-row-template');
 const airportSelectEl = document.getElementById('airport-select');
+const filterSelectEl = document.getElementById('filter-select');
+const updateTimeEl = document.getElementById('update-time');
+
+// Airport Country Mapping (to determine domestic vs international)
+const airportCountries = {
+  "HND": "JP",
+  "NRT": "JP",
+  "JFK": "US",
+  "ZRH": "CH"
+};
 
 // City translation dictionary
 const cityTranslations = {
@@ -281,10 +291,37 @@ function formatTime(date) {
  * Render flights to the DOM
  */
 function renderFlights(flights) {
-  // Clear current list
   flightListEl.innerHTML = '';
+  
+  if (!flights || flights.length === 0) {
+    flightListEl.innerHTML = '<div class="flight-row" style="justify-content: center; color: #888;">No flights available</div>';
+    return;
+  }
+  
+  const currentAirportCode = airportSelectEl.value;
+  const currentCountry = airportCountries[currentAirportCode];
+  const filterMode = filterSelectEl.value; // 'all', 'domestic', 'international'
+  
+  // Apply filter
+  const filteredFlights = flights.filter(flight => {
+    if (filterMode === 'all') return true;
+    
+    // If we don't have country info, show it in both to be safe
+    if (!flight.destinationCountry) return true;
+    
+    const isDomestic = (flight.destinationCountry === currentCountry);
+    if (filterMode === 'domestic') return isDomestic;
+    if (filterMode === 'international') return !isDomestic;
+    
+    return true;
+  });
 
-  flights.forEach(flight => {
+  if (filteredFlights.length === 0) {
+    flightListEl.innerHTML = '<div class="flight-row" style="justify-content: center; color: #888;">No matching flights</div>';
+    return;
+  }
+
+  filteredFlights.forEach(flight => {
     // Clone template
     const clone = template.content.cloneNode(true);
     const rowEl = clone.querySelector('.flight-row');
@@ -363,16 +400,21 @@ async function updateBoard() {
   }
 }
 
-// Handle airport selection change
-airportSelectEl.addEventListener('change', (e) => {
-  const selectedAirport = e.target.value;
-  provider.setAirport(selectedAirport);
+// Event Listeners
+airportSelectEl.addEventListener('change', async (e) => {
+  const newAirport = e.target.value;
+  provider.setAirport(newAirport);
   
-  // Clear the board immediately for feedback
-  flightListEl.innerHTML = '<div style="padding: 20px;">Loading...</div>';
+  // Show loading state
+  flightListEl.innerHTML = '<div class="flight-row" style="justify-content: center; color: #888;">Loading flights...</div>';
   
-  // Fetch new data
+  await provider.init();
   updateBoard();
+});
+
+filterSelectEl.addEventListener('change', () => {
+  // Re-render immediately without fetching
+  renderFlights(provider.flights);
 });
 
 // Initialization
