@@ -307,7 +307,7 @@ function renderFlights(flights) {
     if (filterMode === 'all') return true;
     
     // If we don't have country info, show it in both to be safe
-    if (!flight.destinationCountry) return true;
+    if (!flight.destinationCountry || !currentCountry) return true;
     
     const isDomestic = (flight.destinationCountry === currentCountry);
     if (filterMode === 'domestic') return isDomestic;

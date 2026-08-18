@@ -29,11 +29,14 @@ def fetch_departures(airport_code="HND"):
         flight = item['flight']
         
         # We only care about flights with schedule times
-        schedule_time = flight['time']['scheduled']['departure']
+        time_info = flight.get('time') or {}
+        scheduled_info = time_info.get('scheduled') or {}
+        schedule_time = scheduled_info.get('departure')
         if not schedule_time:
             continue
             
-        estimated_time = flight['time']['estimated']['departure']
+        estimated_info = time_info.get('estimated') or {}
+        estimated_time = estimated_info.get('departure')
         if estimated_time == schedule_time:
             estimated_time = None
         
@@ -51,7 +54,7 @@ def fetch_departures(airport_code="HND"):
             dest_sub = ""
             dest_country = ""
             
-        airline = flight['airline']
+        airline = flight.get('airline')
         if airline:
             airline_name = airline.get('name', '')
             airline_code = airline.get('code', {}).get('iata', '')
@@ -67,7 +70,7 @@ def fetch_departures(airport_code="HND"):
         codeshare_num = codeshares[0] if codeshares and len(codeshares) > 0 else None
         
         # Attempt to get terminal and gate
-        origin = flight['airport']['origin']
+        origin = flight.get('airport', {}).get('origin')
         if origin and 'info' in origin:
             terminal = origin['info'].get('terminal', '')
             gate = origin['info'].get('gate', '')
