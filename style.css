@@ -245,3 +245,162 @@ body {
   font-size: 18px;
   letter-spacing: 1px;
 }
+/* =========================================
+   iPad Landscape Optimization
+   ========================================= */
+
+@media (orientation: landscape) and (pointer: coarse) {
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-color);
+  }
+
+  .board-container {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .header {
+    padding: 10px 14px;
+    min-height: 64px;
+  }
+
+  .header-icon {
+    width: 42px;
+    height: 36px;
+    margin-right: 14px;
+  }
+
+  .header-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .header-text {
+    gap: 10px;
+  }
+
+  .header-text .en {
+    font-size: 28px;
+  }
+
+  .header-text .ja {
+    font-size: 20px;
+  }
+
+  #airport-select,
+  #filter-select {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+
+  .settings-menu {
+    gap: 7px;
+  }
+
+  .settings-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .table-header {
+    padding: 6px 16px;
+    font-size: 10px;
+  }
+
+  .table-header span {
+    font-size: 9px;
+  }
+
+  .table-border {
+    height: 3px;
+  }
+
+  .flight-list {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .flight-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .flight-row {
+    padding: 8px 16px;
+    min-height: 48px;
+    font-size: 17px;
+  }
+
+  .col-schedule {
+    width: 12%;
+  }
+
+  .col-estimated {
+    width: 12%;
+  }
+
+  .col-destination {
+    width: 27%;
+    gap: 7px;
+  }
+
+  .col-flight {
+    width: 34%;
+    gap: 7px;
+  }
+
+  .col-terminal {
+    width: 8%;
+  }
+
+  .col-gate {
+    width: 7%;
+  }
+
+  .schedule-time {
+    padding-left: 14px;
+  }
+
+  .has-changed .schedule-time::before {
+    width: 8px;
+    height: 8px;
+  }
+
+  .dest-main {
+    font-size: 19px;
+    white-space: nowrap;
+  }
+
+  .dest-sub {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .flight-info-container {
+    gap: 10px;
+  }
+
+  .flight-item {
+    gap: 6px;
+  }
+
+  .airline-logo {
+    width: 42px;
+    height: 24px;
+  }
+
+  .flight-number {
+    font-size: 17px;
+    letter-spacing: 0.5px;
+  }
+}
