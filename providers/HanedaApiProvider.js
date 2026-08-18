@@ -6,9 +6,10 @@ class HanedaApiProvider extends FlightDataProvider {
   constructor() {
     super();
     this.flights = [];
-    // Assuming the app is run from the project root where venv is located
-    this.pythonCommand = path.join(process.cwd(), 'venv', 'bin', 'python3');
-    this.scriptPath = path.join(process.cwd(), 'python_scripts', 'fetch_flights.py');
+    const isWindows = process.platform === 'win32';
+    const projectRoot = path.join(__dirname, '..');
+    this.pythonCommand = path.join(projectRoot, 'venv', isWindows ? 'Scripts' : 'bin', isWindows ? 'python.exe' : 'python3');
+    this.scriptPath = path.join(projectRoot, 'python_scripts', 'fetch_flights.py');
     this.airportCode = 'HND';
   }
 
@@ -18,8 +19,7 @@ class HanedaApiProvider extends FlightDataProvider {
 
   async init() {
     console.log(`Initializing HanedaApiProvider (FlightRadarAPI) for ${this.airportCode}...`);
-    // Optionally fetch initial data here
-    await this.fetchDepartures();
+    // Initial fetch is now handled by updateBoard() directly
   }
 
   async fetchDepartures() {

@@ -57,10 +57,12 @@ def fetch_departures(airport_code="HND"):
             airline_name = "Unknown"
             airline_code = ""
             
-        flight_num = flight['identification']['number']['default']
+        identification = flight.get('identification') or {}
+        number_info = identification.get('number') or {}
+        flight_num = number_info.get('default')
         
-        codeshares = flight['identification'].get('codeshare')
-        codeshare_num = codeshares[0] if codeshares else None
+        codeshares = identification.get('codeshare')
+        codeshare_num = codeshares[0] if codeshares and len(codeshares) > 0 else None
         
         # Attempt to get terminal and gate
         origin = flight['airport']['origin']
@@ -77,7 +79,8 @@ def fetch_departures(airport_code="HND"):
             status_text = "DELAYED"
             
         # Map FR24 status
-        fr_status = flight['status']['text']
+        status_info = flight.get('status') or {}
+        fr_status = status_info.get('text') or ''
         if "Boarding" in fr_status:
             status_text = "BOARDING"
         elif "Departed" in fr_status:
@@ -86,7 +89,7 @@ def fetch_departures(airport_code="HND"):
             status_text = "CANCELED"
             
         flights_list.append({
-            "id": flight['identification']['id'] or flight_num,
+            "id": identification.get('id') or flight_num,
             "scheduleTime": schedule_time, # Unix timestamp
             "estimatedTime": estimated_time, # Unix timestamp or None
             "destination": city,

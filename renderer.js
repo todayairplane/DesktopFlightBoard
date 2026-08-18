@@ -167,7 +167,7 @@ function renderFlights(flights) {
       mainLogoEl.style.display = 'none';
     }
 
-    mainFlightEl.querySelector('.flight-number').textContent = flight.flightNumber;
+    mainFlightEl.querySelector('.flight-number').textContent = flight.flightNumber || '';
 
     // Codeshare Airline & Flight (if any)
     if (flight.codeshareAirline) {
@@ -182,7 +182,7 @@ function renderFlights(flights) {
         codeshareLogoEl.style.display = 'none';
       }
 
-      codeshareFlightEl.querySelector('.flight-number').textContent = flight.codeshareNumber;
+      codeshareFlightEl.querySelector('.flight-number').textContent = flight.codeshareNumber || '';
     }
 
     // Terminal
