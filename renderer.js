@@ -382,8 +382,8 @@ async function init() {
   await provider.init();
   updateBoard();
   
-  // Update board every 1 minute since FR24 data doesn't change every second
-  setInterval(updateBoard, 60000);
+  // Update board every 10 minutes to prevent API rate limiting
+  setInterval(updateBoard, 600000);
 }
 
 init();
