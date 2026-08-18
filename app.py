@@ -14,12 +14,21 @@ AIRPORT_CODE = re.compile(r"^[A-Z]{3}$")
 
 @app.after_request
 def add_headers(response):
-    response.headers["Cache-Control"] = "no-store"
+
+    response.headers["Cache-Control"] = (
+        "no-store, no-cache, must-revalidate, max-age=0"
+    )
+
+    response.headers["Pragma"] = "no-cache"
+
+    response.headers["Expires"] = "0"
+
     return response
 
 
 @app.route("/")
 def board():
+
     return send_from_directory(
         BASE_DIR,
         "index.html"
@@ -28,6 +37,7 @@ def board():
 
 @app.route("/style.css")
 def style():
+
     return send_from_directory(
         BASE_DIR,
         "style.css"
@@ -36,6 +46,7 @@ def style():
 
 @app.route("/renderer.js")
 def renderer():
+
     return send_from_directory(
         BASE_DIR,
         "renderer.js"
@@ -44,13 +55,13 @@ def renderer():
 
 @app.route("/health")
 def health():
+
     return jsonify({
         "status": "ok"
     })
 
 
-@app.route("/api/departures")
-def departures():
+def get_flights(direction):
 
     airport = (
         request.args
@@ -59,10 +70,23 @@ def departures():
         .strip()
     )
 
+
     if not AIRPORT_CODE.match(airport):
 
         return jsonify({
-            "error": "Invalid airport code"
+            "error":
+                "Invalid airport code"
+        }), 400
+
+
+    if direction not in [
+        "departures",
+        "arrivals"
+    ]:
+
+        return jsonify({
+            "error":
+                "Invalid direction"
         }), 400
 
 
@@ -72,7 +96,8 @@ def departures():
             [
                 sys.executable,
                 "python_scripts/fetch_flights.py",
-                airport
+                airport,
+                direction
             ],
             capture_output=True,
             text=True,
@@ -83,8 +108,13 @@ def departures():
         if result.returncode != 0:
 
             return jsonify({
-                "error": "Flight data fetch failed",
-                "details": result.stderr[-1500:]
+
+                "error":
+                    "Flight data fetch failed",
+
+                "details":
+                    result.stderr[-1500:]
+
             }), 500
 
 
@@ -94,64 +124,125 @@ def departures():
         if not output:
 
             return jsonify({
-                "airport": airport,
-                "count": 0,
-                "flights": []
+
+                "airport":
+                    airport,
+
+                "direction":
+                    direction,
+
+                "count":
+                    0,
+
+                "flights":
+                    []
+
             })
 
 
         try:
 
-            flights = json.loads(output)
+            flights = json.loads(
+                output
+            )
+
 
         except json.JSONDecodeError:
 
             lines = [
+
                 line.strip()
-                for line in output.splitlines()
+
+                for line
+                in output.splitlines()
+
                 if line.strip()
+
             ]
 
+
             flights = None
+
 
             for line in reversed(lines):
 
                 try:
 
-                    flights = json.loads(line)
+                    flights = json.loads(
+                        line
+                    )
+
                     break
 
                 except json.JSONDecodeError:
+
                     continue
 
 
             if flights is None:
 
                 return jsonify({
-                    "error": "Could not read flight data",
-                    "raw": output[-1500:]
+
+                    "error":
+                        "Could not read flight data",
+
+                    "raw":
+                        output[-1500:]
+
                 }), 500
 
 
         return jsonify({
-            "airport": airport,
-            "count": len(flights),
-            "flights": flights
+
+            "airport":
+                airport,
+
+            "direction":
+                direction,
+
+            "count":
+                len(flights),
+
+            "flights":
+                flights
+
         })
 
 
     except subprocess.TimeoutExpired:
 
         return jsonify({
-            "error": "Flight data request timed out"
+
+            "error":
+                "Flight data request timed out"
+
         }), 504
 
 
     except Exception as e:
 
         return jsonify({
-            "error": str(e)
+
+            "error":
+                str(e)
+
         }), 500
+
+
+@app.route("/api/departures")
+def departures():
+
+    return get_flights(
+        "departures"
+    )
+
+
+@app.route("/api/arrivals")
+def arrivals():
+
+    return get_flights(
+        "arrivals"
+    )
 
 
 if __name__ == "__main__":
