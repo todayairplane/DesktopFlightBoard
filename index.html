@@ -1,7 +1,9 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -19,16 +21,97 @@
     content="black"
   >
 
-  <title>Flight Board - Departures</title>
+  <title>Flight Board</title>
 
   <link
     rel="stylesheet"
     href="style.css"
   >
+
+
+  <style>
+
+    .col-schedule {
+      width: 11%;
+    }
+
+    .col-estimated {
+      width: 11%;
+    }
+
+    .col-destination {
+      width: 25%;
+    }
+
+    .col-flight {
+      width: 27%;
+    }
+
+    .col-aircraft {
+      width: 10%;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .col-terminal {
+      width: 8%;
+    }
+
+    .col-gate {
+      width: 8%;
+    }
+
+    .aircraft-code {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+
+    @media (orientation: landscape) and (pointer: coarse) {
+
+      .col-schedule {
+        width: 11%;
+      }
+
+      .col-estimated {
+        width: 11%;
+      }
+
+      .col-destination {
+        width: 25%;
+      }
+
+      .col-flight {
+        width: 27%;
+      }
+
+      .col-aircraft {
+        width: 10%;
+      }
+
+      .col-terminal {
+        width: 8%;
+      }
+
+      .col-gate {
+        width: 8%;
+      }
+
+      .aircraft-code {
+        font-size: 16px;
+      }
+
+    }
+
+  </style>
+
 </head>
 
 
 <body>
+
 
   <div class="board-container">
 
@@ -56,11 +139,17 @@
 
       <div class="header-text">
 
-        <span class="en">
+        <span
+          class="en"
+          id="header-en"
+        >
           Departures
         </span>
 
-        <span class="ja">
+        <span
+          class="ja"
+          id="header-ja"
+        >
           出発
         </span>
 
@@ -68,6 +157,22 @@
 
 
       <div class="settings-menu">
+
+
+        <select
+          id="direction-select"
+          aria-label="出発到着"
+        >
+
+          <option value="departures">
+            出発
+          </option>
+
+          <option value="arrivals">
+            到着
+          </option>
+
+        </select>
 
 
         <select
@@ -111,14 +216,6 @@
             成田 (NRT)
           </option>
 
-          <option value="JFK">
-            JFK (JFK)
-          </option>
-
-          <option value="ZRH">
-            チューリッヒ (ZRH)
-          </option>
-
         </select>
 
 
@@ -151,7 +248,7 @@
 
         <br>
 
-        <span>
+        <span id="schedule-ja">
           出発時刻
         </span>
 
@@ -173,11 +270,13 @@
 
       <div class="col-destination">
 
-        Destination
+        <span id="location-en">
+          Destination
+        </span>
 
         <br>
 
-        <span>
+        <span id="location-ja">
           行先
         </span>
 
@@ -192,6 +291,19 @@
 
         <span>
           便名
+        </span>
+
+      </div>
+
+
+      <div class="col-aircraft">
+
+        Aircraft
+
+        <br>
+
+        <span>
+          機種
         </span>
 
       </div>
@@ -236,7 +348,7 @@
 
       <div
         class="flight-row"
-        style="justify-content:center; color:#888;"
+        style="justify-content:center;color:#888;"
       >
 
         Loading flights...
@@ -323,6 +435,12 @@
         </div>
 
 
+      </div>
+
+
+      <div
+        class="col-aircraft aircraft-code"
+      >
       </div>
 
 
