@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(
 
 
 # ==========================================
-# RenderのEnvironment Variables
+# Render Environment Variables
 # ==========================================
 
 FLIGHTBOARD_PASSWORD = os.environ.get(
@@ -75,28 +75,45 @@ ALLOWED_DIRECTIONS = {
 
 
 # ==========================================
-# 未ログインアクセスをブロック
+# キャッシュ禁止
+# ==========================================
+
+@app.after_request
+def add_headers(response):
+
+    response.headers["Cache-Control"] = (
+        "no-store, no-cache, must-revalidate, max-age=0"
+    )
+
+    response.headers["Pragma"] = "no-cache"
+
+    response.headers["Expires"] = "0"
+
+    return response
+
+
+# ==========================================
+# ログイン必須
 # ==========================================
 
 @app.before_request
 def require_login():
 
-    # ログイン画面だけは誰でも開ける
     if request.endpoint == "login":
         return None
 
-    # ログイン済み
+
     if session.get("authenticated") is True:
         return None
 
-    # APIへ直接アクセスされた場合
+
     if request.path.startswith("/api/"):
 
         return jsonify({
             "error": "Authentication required"
         }), 401
 
-    # その他はログイン画面へ
+
     return redirect(
         url_for("login")
     )
@@ -114,12 +131,14 @@ def login():
 
     error = ""
 
+
     if request.method == "POST":
 
         entered_password = request.form.get(
             "password",
             ""
         )
+
 
         if hmac.compare_digest(
             entered_password,
@@ -135,6 +154,7 @@ def login():
             return redirect(
                 url_for("board")
             )
+
 
         error = "パスワードが違います"
 
@@ -166,7 +186,6 @@ def login():
 
 <title>Flight Board Login</title>
 
-
 <style>
 
 * {
@@ -189,15 +208,14 @@ body {
         sans-serif;
 }
 
-
 body {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-
 .login-box {
+
     width: min(
         420px,
         calc(100vw - 40px)
@@ -218,12 +236,10 @@ body {
         rgba(0,0,0,0.35);
 }
 
-
 .icon {
     font-size: 34px;
     margin-bottom: 16px;
 }
-
 
 .title {
     font-size: 28px;
@@ -231,25 +247,21 @@ body {
     margin-bottom: 4px;
 }
 
-
 .subtitle {
     color: #9eafbf;
     font-size: 14px;
     margin-bottom: 28px;
 }
 
-
 label {
     display: block;
     margin-bottom: 8px;
-
     color: #c7d2dc;
-
     font-size: 13px;
 }
 
-
 input {
+
     width: 100%;
 
     padding: 14px 15px;
@@ -269,13 +281,12 @@ input {
     outline: none;
 }
 
-
 input:focus {
     border-color: #e9c341;
 }
 
-
 button {
+
     width: 100%;
 
     margin-top: 18px;
@@ -297,8 +308,8 @@ button {
     cursor: pointer;
 }
 
-
 .error {
+
     margin-top: 16px;
 
     color: #ff7777;
@@ -308,8 +319,8 @@ button {
     font-size: 14px;
 }
 
-
 .private {
+
     margin-top: 24px;
 
     color: #718497;
@@ -325,9 +336,7 @@ button {
 
 </head>
 
-
 <body>
-
 
 <div class="login-box">
 
@@ -342,7 +351,6 @@ button {
     <div class="subtitle">
         Private Flight Information Board
     </div>
-
 
     <form method="POST">
 
@@ -364,7 +372,6 @@ button {
 
     </form>
 
-
     {% if error %}
 
     <div class="error">
@@ -373,13 +380,11 @@ button {
 
     {% endif %}
 
-
     <div class="private">
         PRIVATE ACCESS
     </div>
 
 </div>
-
 
 </body>
 
@@ -416,6 +421,10 @@ def board():
     )
 
 
+# ==========================================
+# 通常CSS
+# ==========================================
+
 @app.route("/style.css")
 def style():
 
@@ -425,12 +434,42 @@ def style():
     )
 
 
+# ==========================================
+# 通常JavaScript
+# ==========================================
+
 @app.route("/renderer.js")
 def renderer():
 
     return send_from_directory(
         BASE_DIR,
         "renderer.js"
+    )
+
+
+# ==========================================
+# パタパタCSS
+# ==========================================
+
+@app.route("/patapata.css")
+def patapata_css():
+
+    return send_from_directory(
+        BASE_DIR,
+        "patapata.css"
+    )
+
+
+# ==========================================
+# パタパタJavaScript
+# ==========================================
+
+@app.route("/patapata.js")
+def patapata_js():
+
+    return send_from_directory(
+        BASE_DIR,
+        "patapata.js"
     )
 
 
@@ -444,6 +483,7 @@ def load_flights(
 ):
 
     result = subprocess.run(
+
         [
             sys.executable,
 
@@ -491,6 +531,7 @@ def load_flights(
             output
         )
 
+
         if isinstance(
             value,
             list
@@ -526,6 +567,7 @@ def load_flights(
                 line
             )
 
+
             if isinstance(
                 value,
                 list
@@ -545,7 +587,7 @@ def load_flights(
 
 
 # ==========================================
-# 共通API
+# 共通API処理
 # ==========================================
 
 def flight_api(
@@ -628,7 +670,7 @@ def flight_api(
 
 
 # ==========================================
-# 出発
+# 出発API
 # ==========================================
 
 @app.route(
@@ -642,7 +684,7 @@ def departures():
 
 
 # ==========================================
-# 到着
+# 到着API
 # ==========================================
 
 @app.route(
@@ -656,7 +698,7 @@ def arrivals():
 
 
 # ==========================================
-# 共通
+# 共通API
 # ==========================================
 
 @app.route(
@@ -690,11 +732,13 @@ def flights():
 def health():
 
     return jsonify({
+
         "status":
             "ok",
 
         "authenticated":
             True
+
     })
 
 
