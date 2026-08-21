@@ -1,0 +1,462 @@
+/* =========================================
+   RETRO SPLIT-FLAP DISPLAY
+   ========================================= */
+
+#display-select {
+  background-color: #1a1b3a;
+  color: white;
+  border: 1px solid #3a3b5a;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-family: var(--font-family);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+#display-select:hover {
+  background-color: #2a2b4a;
+  border-color: var(--icon-bg);
+}
+
+
+/* =========================================
+   パタパタモード 全体
+   ========================================= */
+
+body.split-flap-mode {
+  background: #000000;
+}
+
+.split-flap-mode .board-container {
+  background: #050505;
+}
+
+.split-flap-mode .header {
+  background: #050505;
+  border-bottom: 1px solid #282828;
+}
+
+.split-flap-mode .header-icon {
+  background: #e5b92f;
+}
+
+.split-flap-mode .header-text .en {
+  color: #f3f3f3;
+  font-family: "Courier New", monospace;
+  letter-spacing: 2px;
+}
+
+.split-flap-mode .header-text .ja {
+  color: #c7c7c7;
+}
+
+.split-flap-mode .table-header {
+  background: #080808;
+  color: #bdbdbd;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.6px;
+}
+
+.split-flap-mode .table-header span {
+  color: #777777;
+}
+
+.split-flap-mode .table-border {
+  background: #d7ad2c;
+}
+
+
+/* =========================================
+   行
+   ========================================= */
+
+.split-flap-mode .flight-list {
+  background: #030303;
+}
+
+.split-flap-mode .flight-row {
+  background: #050505 !important;
+  border-bottom: 2px solid #111111;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+
+/* =========================================
+   パタパタパネル共通
+   ========================================= */
+
+.split-flap-mode .flight-row .col-schedule,
+.split-flap-mode .flight-row .col-estimated,
+.split-flap-mode .flight-row .col-destination,
+.split-flap-mode .flight-row .col-flight,
+.split-flap-mode .flight-row .col-aircraft,
+.split-flap-mode .flight-row .col-terminal,
+.split-flap-mode .flight-row .col-gate {
+
+  position: relative;
+
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      to bottom,
+      #1b1b1b 0%,
+      #151515 47%,
+      #050505 48%,
+      #050505 52%,
+      #121212 53%,
+      #181818 100%
+    );
+
+  border-top: 1px solid #303030;
+  border-bottom: 1px solid #050505;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.05),
+    inset 0 -1px 2px rgba(0,0,0,0.8);
+
+  color: #f0f0df;
+
+  font-family:
+    "Courier New",
+    "SFMono-Regular",
+    monospace;
+
+  text-shadow:
+    0 1px 0 #000,
+    0 0 2px rgba(255,255,255,0.18);
+
+  overflow: hidden;
+}
+
+
+/* パネル中央の折り目 */
+
+.split-flap-mode .flight-row .col-schedule::after,
+.split-flap-mode .flight-row .col-estimated::after,
+.split-flap-mode .flight-row .col-destination::after,
+.split-flap-mode .flight-row .col-flight::after,
+.split-flap-mode .flight-row .col-aircraft::after,
+.split-flap-mode .flight-row .col-terminal::after,
+.split-flap-mode .flight-row .col-gate::after {
+
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  top: 50%;
+
+  height: 1px;
+
+  background: rgba(0,0,0,0.9);
+
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.035);
+
+  pointer-events: none;
+}
+
+
+/* =========================================
+   時刻
+   ========================================= */
+
+.split-flap-mode .schedule-time {
+
+  color: #f3f0d8;
+
+  font-size: 20px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+
+.split-flap-mode .estimated-time {
+
+  color: #efc53b;
+
+  font-size: 20px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+
+/* 元の黄色丸をパタパタ時は消す */
+
+.split-flap-mode
+.has-changed
+.schedule-time::before {
+
+  display: none;
+}
+
+
+/* =========================================
+   行先・出発地
+   ========================================= */
+
+.split-flap-mode .dest-main {
+
+  color: #f1efda;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.5px;
+
+  white-space: nowrap;
+}
+
+
+.split-flap-mode .dest-sub {
+
+  color: #8d8d82;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   便名
+   ========================================= */
+
+.split-flap-mode .flight-info-container {
+
+  color: #f0eed8;
+}
+
+
+.split-flap-mode .flight-number {
+
+  color: #f0eed8;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+
+/* パタパタでは航空会社ロゴを少し落ち着かせる */
+
+.split-flap-mode .airline-logo {
+
+  width: 38px;
+  height: 22px;
+
+  border-radius: 1px;
+
+  filter:
+    saturate(0.85)
+    brightness(0.92);
+
+  box-shadow: none;
+}
+
+
+/* =========================================
+   機種
+   ========================================= */
+
+.split-flap-mode .aircraft-code {
+
+  color: #f0eed8;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  justify-content: center;
+}
+
+
+/* =========================================
+   ターミナル・ゲート
+   ========================================= */
+
+.split-flap-mode .terminal-text,
+.split-flap-mode .gate-text {
+
+  color: #f0eed8;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 18px;
+
+  font-weight: 700;
+}
+
+
+.split-flap-mode .terminal-text {
+  justify-content: center;
+}
+
+
+.split-flap-mode .gate-text {
+  justify-content: flex-end;
+}
+
+
+/* =========================================
+   実際にパタッと切り替わるアニメーション
+   ========================================= */
+
+@keyframes splitFlapChange {
+
+  0% {
+    transform:
+      perspective(300px)
+      rotateX(0deg);
+
+    filter:
+      brightness(1);
+  }
+
+  35% {
+    transform:
+      perspective(300px)
+      rotateX(-68deg);
+
+    filter:
+      brightness(0.45);
+  }
+
+  55% {
+    transform:
+      perspective(300px)
+      rotateX(42deg);
+
+    filter:
+      brightness(0.65);
+  }
+
+  78% {
+    transform:
+      perspective(300px)
+      rotateX(-12deg);
+  }
+
+  100% {
+    transform:
+      perspective(300px)
+      rotateX(0deg);
+
+    filter:
+      brightness(1);
+  }
+
+}
+
+
+.split-flap-mode .flap-changing {
+
+  transform-origin:
+    center center;
+
+  animation:
+    splitFlapChange
+    0.42s
+    ease-in-out;
+}
+
+
+/* =========================================
+   iPad 横画面
+   ========================================= */
+
+@media
+(orientation: landscape)
+and (pointer: coarse) {
+
+  #display-select {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+
+
+  .split-flap-mode .flight-row {
+
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+
+
+  .split-flap-mode .flight-row .col-schedule,
+  .split-flap-mode .flight-row .col-estimated,
+  .split-flap-mode .flight-row .col-destination,
+  .split-flap-mode .flight-row .col-flight,
+  .split-flap-mode .flight-row .col-aircraft,
+  .split-flap-mode .flight-row .col-terminal,
+  .split-flap-mode .flight-row .col-gate {
+
+    min-height: 40px;
+  }
+
+
+  .split-flap-mode .schedule-time,
+  .split-flap-mode .estimated-time {
+
+    font-size: 18px;
+  }
+
+
+  .split-flap-mode .dest-main {
+
+    font-size: 17px;
+  }
+
+
+  .split-flap-mode .flight-number {
+
+    font-size: 16px;
+  }
+
+
+  .split-flap-mode .aircraft-code {
+
+    font-size: 15px;
+  }
+
+
+  .split-flap-mode .terminal-text,
+  .split-flap-mode .gate-text {
+
+    font-size: 17px;
+  }
+
+}
