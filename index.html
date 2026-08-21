@@ -8,7 +8,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
 
   <meta
@@ -26,6 +26,11 @@
   <link
     rel="stylesheet"
     href="style.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="patapata.css"
   >
 
 
@@ -69,7 +74,9 @@
     }
 
 
-    @media (orientation: landscape) and (pointer: coarse) {
+    @media
+    (orientation: landscape)
+    and (pointer: coarse) {
 
       .col-schedule {
         width: 11%;
@@ -157,6 +164,22 @@
 
 
       <div class="settings-menu">
+
+
+        <select
+          id="display-select"
+          aria-label="表示方式"
+        >
+
+          <option value="normal">
+            通常
+          </option>
+
+          <option value="split">
+            パタパタ
+          </option>
+
+        </select>
 
 
         <select
@@ -463,6 +486,8 @@
 
 
   <script src="renderer.js"></script>
+
+  <script src="patapata.js"></script>
 
 
 </body>
